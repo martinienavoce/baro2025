@@ -6,7 +6,6 @@ library(questionr)
 library(readxl) #pour pouvoir par exemple importer les tables excel
 library(foreign) #pour pouvoir par exemple importer les tables dbf
 library(haven) #pour pouvoir par exemple importer les tables SAS, SPSS, STATA
-library(FactoMineR)
 library(RColorBrewer) 
 library(ggrepel) 
 library(explor)
