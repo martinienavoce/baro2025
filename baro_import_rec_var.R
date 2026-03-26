@@ -500,3 +500,4 @@ baro$SYNDICAT_SUP_RECHERCHE<-case_when(
 baro$SYNDICAT_ITRF_BI_O<-case_when(
   (baro$METIER %in% c("Bibliothécaire", "Ouvrier·ère (en service scolaire, agricole ou ESR)", "Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)")) ~ "Pers. ITRF, Biblio. et ouvriers EN et ESR",
   T ~ "Autres métiers")
+

@@ -115,9 +115,9 @@ baro$QA10_AVENIR_EDUC_CITOYENS_LIBRES<-fct_collapse(factor(baro$QA10_AVENIR_EDUC
 
 # Ordonner les modalités----
 
-##Tous les "NSPP" en dernière position----
+##Tous les "NSPP" en 1ère position (donc en dernière position lors des tris croisé----
 baro <- baro %>%
-  mutate(across(where(is.factor), ~ fct_relevel(., "NSPP", after = 0)))
+  mutate(across(where(is.factor), ~ fct_relevel(., "NSPP", after = 0))) # after = Inf : pour mettre à la fin
 
 
 ## Sexe----
