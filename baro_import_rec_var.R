@@ -16,6 +16,7 @@ library(dplyr)
 library(gtsummary)
 library(survey)
 library(gt)
+library(tibble)
 
 # Importation de la base de données----
 

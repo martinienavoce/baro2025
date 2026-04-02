@@ -144,7 +144,7 @@ baro$SYNDICAT_SE_AGE <- factor(baro$SYNDICAT_SE_AGE,
 ## QA3 : Augmentation de salaire----
 
 baro$QA3_AGMENTATION_SALAIRE <- factor(baro$QA3_AGMENTATION_SALAIRE, 
-                                       levels = c("NSPP","50 % ou plus", "30 %", "20 %", "10 %", "5 %"))
+                                       levels = c("5 %", "10 %", "20 %", "30 %","50 % ou plus", "NSPP"))
 
 ## METIER10----
 

@@ -247,13 +247,27 @@ server <- function(input, output, session) {
       df <- df %>%
         mutate(across(where(is.factor), ~ fct_relevel(., "NSPP", after = Inf))) # after = 0 : pour mettre en début
       
-      tab <- df %>% 
+      tab1 <- df %>% 
         count(.data[[input$q1]]) %>% 
-        mutate(Prop = round(n*100/sum(n),1))
+        mutate(Pourcentage = round(n*100/sum(n),1)) %>% 
+        rename(Effectif=n)
       
-      graph <- ggplot(tab, aes(x = .data[[input$q1]], y = n, fill = .data[[input$q1]])) +
+      ligne_ensemble <- tibble(      # tibble pour avoir en dataframe
+        !!input$q1 := "Ensemble", # !! : pour évaluer le q1 entrée
+        Effectif = sum(tab1$Effectif),
+        Pourcentage = sum(tab1$Pourcentage)
+      )
+      
+      tab <- bind_rows(tab1,ligne_ensemble)
+      
+      graph <- ggplot(tab1, aes(x = .data[[input$q1]], y = Effectif, fill = .data[[input$q1]])) +
         geom_bar(stat="identity") +
-        geom_text(aes(label=paste0(Prop,"%")), vjust=-0.5) +
+        geom_text(          # Afficher du texte (Effectif et %) à l'intérieur des bandes
+          aes(label = paste0(Pourcentage, "%")),
+          vjust = 0.5,
+          color = "black",
+          size = 4
+        )+
         labs(
           title = paste0("Distribution de ", input$q1),
           x = input$q1,
@@ -310,6 +324,13 @@ server <- function(input, output, session) {
           y=prop, 
           fill=q1)) +
           geom_bar(stat="identity") +
+          geom_text(               # Afficher du texte (%) à l'intérieur des bandes
+            aes(label = paste0(prop, "%")),
+            position = position_stack(vjust = 0.5),  # centré dans les bandes
+            color = "white",
+            fontface = "bold",
+            size = 4
+          ) +
           labs(
             title = paste("Distribution de", input$q1, "selon", input$q2),
             x = input$q2,
@@ -327,6 +348,13 @@ server <- function(input, output, session) {
           fill=q1)) +
           geom_bar(stat="identity") +
           coord_flip() +
+          geom_text(               # Afficher du texte (%) à l'intérieur des bandes
+            aes(label = paste0(prop, "%")),
+            position = position_stack(vjust = 0.5),  # centré dans les bandes
+            color = "white",
+            fontface = "bold",
+            size = 4
+          ) +
           labs(
             title = paste("Distribution de", input$q1, "selon", input$q2),
             x = input$q1,
