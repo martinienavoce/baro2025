@@ -17,6 +17,7 @@ library(gtsummary)
 library(survey)
 library(gt)
 library(tibble)
+library(stringr)
 
 # Importation de la base de données----
 
@@ -214,86 +215,6 @@ dep_4 <- bind_rows(dep_4, autres_zones)
 baro <- baro %>%
   left_join(dep_4, by = "code_dep")
 
-
-
-##METIER en 10 classes -----
-
-baro$METIER10<-fct_collapse(factor(baro$METIER),
-                            "Enseignants et autres éduc."=c("Enseignant·e, CPE, ...","Professeur·e de la Ville de Paris","Professeur·e de sport", "Autre formateur·trice","Conseiller·ère pédagogique","Conseiller·ère en formation continue (CFC)","Conseiller·ère Technique et Pédagogique Supérieur (CTPS)","Conseiller·ère d'Éducation Populaire et de Jeunesse (CEPJ)","Éducateur·trice spécialisé·e, Moniteur·trice éducateur·trice","Animateur·trice"),
-                            "AESH, AED, EVS"="AESH, assistant·e d'éducation, EVS",
-                            "Pers. sociaux et de sante"=c("Assistant·e de service social et Conseiller·ère Technique","Psychologue","Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)",  "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)"),
-                            "Dir. d'école"="Directeur·trice d'école",
-                            "Pers. de direction d'etbt"=c("Directeur·trice de SEGPA", "Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)","Personnel de direction","Directeur·trice (et directeur·trice adjoint·e) dans l'enseignement agricole"),
-                            "Inspecteurs"=c("Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports"),
-                            "Pers. administratif"="Administratif·tive, gestionnaire",
-                            "Pers. technique"=c("Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)","Ouvrier·ère (en service scolaire, agricole ou ESR)","Bibliothécaire","Architecte et urbaniste"),
-                            "Chercheurs"="Chercheur·e et Enseignant·e-chercheur·e",
-                            "Professions non catégorisées"="Autre")
-
-
-##METIER en 15 classes -----
-
-
-baro$METIER15 <-case_when(
-  baro$METIER == "Administratif·tive, gestionnaire" ~ "AESH, AED, EVS",
-  baro$METIER == "AESH, assistant·e d'éducation, EVS" ~ "Admin, gestionnaire",
-  baro$METIER == "Assistant·e de service social et Conseiller·ère Technique" ~ "Assist. de service social et CT",
-  baro$METIER == "Chercheur·e et Enseignant·e-chercheur·e" ~ "Chercheurs et ens. chercheurs",
-  baro$METIER == "Conseiller·ère pédagogique" ~ "Conseillers pédagogiques",
-  baro$METIER == "Directeur·trice d'école" ~ "Dir. d'école",
-  baro$METIER == "Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)" ~ "DDFPT",
-  baro$METIER == "Enseignant·e, CPE, ..." ~ "Enseignant·e, CPE",
-  baro$METIER == "Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)" ~ "Infirmiers",
-  baro$METIER == "Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)" ~ "Ingénieurs et tech.",
-  baro$METIER %in% c("Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports") ~ "Inspecteurs",
-  baro$METIER == "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)" ~ "Médecins",
-  baro$METIER == "Personnel de direction" ~ "Pers. de direction",
-  baro$METIER == "Psychologue" ~ "Psychologue",
-  T ~ "Autres")
-
-##METIER en 9 classes -----
-
-baro$METIER9<-fct_collapse(factor(baro$METIER),
-                           "Enseignants"=c("Enseignant·e, CPE, ...","Professeur·e de la Ville de Paris","Professeur·e de sport"),
-                           "Conseillers pedagogiques" = c("Autre formateur·trice","Conseiller·ère en formation continue (CFC)","Conseiller·ère pédagogique","Conseiller·ère Technique et Pédagogique Supérieur (CTPS)"),
-                           "AESH..."="AESH, assistant·e d'éducation, EVS",
-                           "Autres Pers sociaux et de sante"=c("Assistant·e de service social et Conseiller·ère Technique","Psychologue","Animateur·trice","Conseiller·ère d'Éducation Populaire et de Jeunesse (CEPJ)","Éducateur·trice spécialisé·e, Moniteur·trice éducateur·trice","Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)",  "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)"),
-                           "Pers de direction d'etbt"=c("Directeur·trice de SEGPA","Directeur·trice d'école","Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)","Personnel de direction","Directeur·trice (et directeur·trice adjoint·e) dans l'enseignement agricole"),
-                           "Inspecteurs"=c("Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports"),
-                           "Pers admn tech et de support"=c("Administratif·tive, gestionnaire","Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)","Bibliothécaire","Architecte et urbaniste","Ouvrier·ère (en service scolaire, agricole ou ESR)"),
-                           "Chercheurs"="Chercheur·e et Enseignant·e-chercheur·e",
-                           "Autres métiers"="Autre")
-
-
-##METIER en 7 classes + Autre-----
-
-baro$METIER7<-fct_collapse(factor(baro$METIER),
-                           "Enseignants"=c("Enseignant·e, CPE, ...","Professeur·e de la Ville de Paris","Professeur·e de sport"),
-                           "Conseillers pedagogiques" = c("Autre formateur·trice","Conseiller·ère en formation continue (CFC)","Conseiller·ère pédagogique","Conseiller·ère Technique et Pédagogique Supérieur (CTPS)"),
-                           "Pers sociaux et de sante"=c("AESH, assistant·e d'éducation, EVS","Assistant·e de service social et Conseiller·ère Technique","Psychologue","Animateur·trice","Conseiller·ère d'Éducation Populaire et de Jeunesse (CEPJ)","Éducateur·trice spécialisé·e, Moniteur·trice éducateur·trice","Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)",  "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)"),
-                           "Pers de direction d'etbt"=c("Directeur·trice de SEGPA","Directeur·trice d'école","Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)","Personnel de direction","Directeur·trice (et directeur·trice adjoint·e) dans l'enseignement agricole"),
-                           "Inspecteurs"=c("Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports"),
-                           "Pers admn tech et de support"=c("Administratif·tive, gestionnaire","Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)","Bibliothécaire","Architecte et urbaniste","Ouvrier·ère (en service scolaire, agricole ou ESR)"),
-                           "Chercheurs"="Chercheur·e et Enseignant·e-chercheur·e",
-                           "Autres métiers"="Autre")
-
-
-##METIER en 6 classes avec Autre-----
-
-baro$METIER6<-fct_collapse(factor(baro$METIER),
-                           "Enseignants"=c("Enseignant·e, CPE, ...","Professeur·e de la Ville de Paris","Professeur·e de sport"),
-                           "Pers sociaux et de sante"=c("AESH, assistant·e d'éducation, EVS","Assistant·e de service social et Conseiller·ère Technique","Psychologue","Animateur·trice","Conseiller·ère d'Éducation Populaire et de Jeunesse (CEPJ)","Éducateur·trice spécialisé·e, Moniteur·trice éducateur·trice","Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)",  "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)"),
-                           "Personnel d'encadrement"=c("Directeur·trice de SEGPA","Directeur·trice d'école","Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)","Personnel de direction","Directeur·trice (et directeur·trice adjoint·e) dans l'enseignement agricole","Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports","Autre formateur·trice","Conseiller·ère en formation continue (CFC)","Conseiller·ère pédagogique","Conseiller·ère Technique et Pédagogique Supérieur (CTPS)"),
-                           "Pers admn tech et de support"=c("Administratif·tive, gestionnaire","Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)","Bibliothécaire","Architecte et urbaniste","Ouvrier·ère (en service scolaire, agricole ou ESR)"),
-                           "Chercheurs"="Chercheur·e et Enseignant·e-chercheur·e",
-                           "Autres métiers"="Autre")
-
-
-##METIER en 2 classes : AESH et les autres-----
-
-baro$METIER2_AESH<-fct_collapse(factor(baro$METIER),
-                                "AESH, assistant·e d'éducation, EVS"="AESH, assistant·e d'éducation, EVS",
-                                "Les autres métiers"=c("Enseignant·e, CPE, ...","Professeur·e de la Ville de Paris","Professeur·e de sport","Assistant·e de service social et Conseiller·ère Technique","Psychologue","Animateur·trice","Conseiller·ère d'Éducation Populaire et de Jeunesse (CEPJ)","Éducateur·trice spécialisé·e, Moniteur·trice éducateur·trice","Infirmier·ère (en service scolaire, agricole ou universitaire et conseiller·ère technique)",  "Médecin (en service scolaire, agricole ou universitaire et conseiller·ère technique)","Directeur·trice de SEGPA","Directeur·trice d'école","Directeur·trice délégué·e aux formations professionnelles et technologiques (DDFPT)","Personnel de direction","Directeur·trice (et directeur·trice adjoint·e) dans l'enseignement agricole","Inspecteur·trice d'académie - Inspecteur·trice pédagogique régional·e (IA-IPR)","Inspecteur·trice de l'Éducation nationale (IEN)","Inspecteur·trice de l'enseignement agricole","Inspecteur·trice de la Jeunesse et des sports","Autre formateur·trice","Conseiller·ère en formation continue (CFC)","Conseiller·ère pédagogique","Conseiller·ère Technique et Pédagogique Supérieur (CTPS)","Administratif·tive, gestionnaire","Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)","Bibliothécaire","Architecte et urbaniste","Ouvrier·ère (en service scolaire, agricole ou ESR)","Chercheur·e et Enseignant·e-chercheur·e","Autre"))
 
 ## Création de la var représentant les différents DROM et COM et les autres départements ----
 
@@ -502,3 +423,7 @@ baro$SYNDICAT_ITRF_BI_O<-case_when(
   (baro$METIER %in% c("Bibliothécaire", "Ouvrier·ère (en service scolaire, agricole ou ESR)", "Ingénieur·e et technicien·ne (en service scolaire, agricole ou ESR)")) ~ "Pers. ITRF, Biblio. et ouvriers EN et ESR",
   T ~ "Autres métiers")
 
+
+# Conversion de toutes les variables character en factor
+baro <- baro %>%
+  mutate(across(where(is.character), as.factor))

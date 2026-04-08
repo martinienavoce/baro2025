@@ -115,9 +115,20 @@ baro$QA10_AVENIR_EDUC_CITOYENS_LIBRES<-fct_collapse(factor(baro$QA10_AVENIR_EDUC
 
 # Ordonner les modalités----
 
-##Tous les "NSPP" en 1ère position (donc en dernière position lors des tris croisé----
+## Réordonne en mettant les oui, d'accord, non, pas d'accord devant et tous les "NSPP" en dernière position ----
+
 baro <- baro %>%
-  mutate(across(where(is.factor), ~ fct_relevel(., "NSPP", after = 0))) # after = Inf : pour mettre à la fin
+  mutate(
+    across(
+      where(is.factor),
+      ~ fct_relevel(., 
+                    "Oui", "D'accord", 
+                    "Non", "Pas d'accord",
+                    after = 0 # 0 pour indiquer début
+      ) |> 
+        fct_relevel("Autres métiers", "Autre métier", "Autre pers.", "Pas en éducation prioritaire", "NSPP", after = Inf) # Inf pour indiquer la fin
+    )
+  )
 
 
 ## Sexe----
@@ -129,6 +140,11 @@ baro$Sexe <- factor(baro$Sexe,
 
 baro$AGE <- factor(baro$AGE, 
                    levels = c("- de 35 ans", "de 35 à 45 ans", "de 46 à 55 ans", "+ de 55 ans"))
+
+## ANCIENNETE----
+
+baro$ANCIENNETE <- factor(baro$ANCIENNETE, 
+                   levels = c("0 - 4 ans", "5 - 9 ans", "10 - 20 ans", "+ de 20 ans"))
 
 ## ZONE4----
 
@@ -145,16 +161,6 @@ baro$SYNDICAT_SE_AGE <- factor(baro$SYNDICAT_SE_AGE,
 
 baro$QA3_AGMENTATION_SALAIRE <- factor(baro$QA3_AGMENTATION_SALAIRE, 
                                        levels = c("5 %", "10 %", "20 %", "30 %","50 % ou plus", "NSPP"))
-
-## METIER10----
-
-baro$METIER10 <- factor(baro$METIER10, 
-                        levels = c("Professions non catégorisées","Pers. technique","Pers. sociaux et de sante","Pers. de direction d'etbt","Pers. administratif","Inspecteurs","Enseignants et autres éduc.","Dir. d'école","Chercheurs","AESH, AED, EVS"))
-
-##METIER15----
-
-baro$METIER15 <- factor(baro$METIER15, 
-                        levels = c("Autres","Chercheurs et ens. chercheurs","Psychologue","Pers. de direction","Médecins","Inspecteurs","Ingénieurs et tech.","Infirmiers","Enseignant·e, CPE","DDFPT","Dir. d'école","Conseillers pédagogiques","Assist. de service social et CT","Admin, gestionnaire","AESH, AED, EVS"))
 
 
 ## ADHESION_SYNDICALE----
