@@ -645,7 +645,9 @@ server <- function(input, output, session) {
         rv$plot <- ggplotly(g, tooltip = "text") %>% # tooltip = "text" : Pour contrôler ce qui s'affiche au survol du graphique, ici le contenu de text fixé plus haut
           layout(height = height_plot, legend = list(orientation = "h")) # height = height_plot: Pour attribuer la hauteur calculée au graphique dans plotly
         
+        
       } else {
+        
         
   ##############################Tri croisé ########################################
         req(input$q2)
