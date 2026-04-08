@@ -1,0 +1,48 @@
+name: Deploy to shinyapps.io
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            shiny
+            ggplot2
+            dplyr
+            DT
+            bslib
+            plotly
+            readr
+            shinyjs
+            writexl
+            rsconnect
+            questionr
+            stringr
+
+      - name: Deploy
+        env:
+          SHINYAPPS_NAME:   ${{ secrets.SHINYAPPS_NAME }}
+          SHINYAPPS_TOKEN:  ${{ secrets.SHINYAPPS_TOKEN }}
+          SHINYAPPS_SECRET: ${{ secrets.SHINYAPPS_SECRET }}
+        run: |
+          Rscript -e "
+            rsconnect::setAccountInfo(
+              name   = Sys.getenv('SHINYAPPS_NAME'),
+              token  = Sys.getenv('SHINYAPPS_TOKEN'),
+              secret = Sys.getenv('SHINYAPPS_SECRET')
+            )
+            rsconnect::deployApp(
+              appDir  = '.',
+              appName = 'baro2025',
+              forceUpdate = TRUE
+            )
+          "
