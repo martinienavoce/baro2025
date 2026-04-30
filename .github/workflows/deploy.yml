@@ -27,6 +27,11 @@ jobs:
             rsconnect
             questionr
             stringr
+            tidyverse
+            explor
+            factoextra
+            ggrepel
+            gtsummary
 
       - name: Deploy
         env:
