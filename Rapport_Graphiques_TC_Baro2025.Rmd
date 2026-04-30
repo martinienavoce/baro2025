@@ -1,0 +1,153 @@
+---
+title: "Rapport des tris simples et croisés sous forme graphique du baromètre 2025"
+author: "Martinien AVOCE"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_width: 10
+    fig_height: 6
+    fig_retina: 2
+    toc: true
+    toc_float: true
+    toc_depth: 5   # Jusqu’au niveau ##### inclus
+    theme: cerulean
+    highlight: tango
+  pdf_document:
+    toc: true
+    toc_depth: 5
+    number_sections: true
+  word_document:
+    toc: true
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# opts_chunk$set() : pour indiquer que le paramétrage s'applique à tous les chunks du document automatiquement, sans avoir à le répéter chunk par chunk.
+
+# echo = FALSE : masque le code source
+
+# warning = FALSE : masque les avertissements
+
+# message = FALSE : masque les messages (chargement de packages, etc.)
+
+# cache   = TRUE : pour activer le cache et gagner du temps aux prochains render
+
+# cache.path = "cache/" : dossier dedié au cache
+
+# Chargement des packages
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(here)
+library(gt)
+
+# Import des scripts
+source("baro2025_import_rename_var.R")
+source("baro2025_recodage_modalité.R")
+source("baro2025_création_fonctions_objets_utiles.R")
+
+# Variables à analyser :  Colonnes des questions (QT + QA) sans les NSPP
+
+cols_questions <- fonction_cols_questions(baro2025) # Usage de la fonction qui renvoie la liste des questions
+
+cols_questions <- cols_questions[!grepl("NSPP", cols_questions)] # Exclure les questions relatives aux NSPP
+
+# Variables exogènes :  
+
+var_exogenes <- c("SEXE", "AGE", "CATEGORIE", "ADHESION_SYNDICALE", "MINISTERE", "ANCIENNETE") # Le métier est imbriqué dans le ministère car dépend de celui-ci
+
+# Liste des ministères  
+
+liste_ministeres <- unique(baro2025$MINISTERE)
+
+```
+
+
+## **Grandes tendances du baromètre 2025**
+
+
+```{r graphiques, results='asis'}
+
+#### Cas des qcu
+
+for (i in seq_along(cols_questions)) {   # seq_along() : compte de 1 à length(cols_questions)
+  
+  q <- cols_questions[i]
+  num_q <- i
+
+  # Automatisation des titres
+  
+  cat(paste0("\n\n## **",num_q,"- ", q, "**","\n\n")) # cat() : pour printer ce qui est à l'intérieur, i.e : les numérotations et les titres des questions
+  
+  # Tri à plat
+  
+  cat(paste0("\n\n### **", num_q, "-1", " Tri à plat", "**","\n\n")) # En Markdown, un titre étant toujours précédé et suivi d'une ligne vide pour être reconnu.
+
+  print(plotS_qcu(baro2025, q)) # Usage de la fonction générant le graphe des tris à plat
+  
+  for (j in seq_along(var_exogenes)) { 
+    
+    var <- var_exogenes[j]
+    num_var <- j + 1
+    
+    cat(paste0("\n\n### **",num_q, "-", num_var, " Distribution selon ", var, "**","\n\n"))
+    
+    # Tri croisé
+    
+    print(plotC_qcu(baro2025, var, q)) # Usage de la fonction générant le graphe des tris croisés
+    
+    # Interprétation de la relation entre les deux variables
+      
+    res <- test_dependance(baro2025, var, q) # Usage de la fonction renvoyant les résultats du test d'indépendance
+    
+    cat(res$interpretation)
+    
+      
+    if (var == "MINISTERE"){
+      
+      cat(paste0("\n\n#### **",num_q,"-", num_var, "-1 ", "Vue par métier", "**","\n\n"))
+      
+      print(plotC_qcu(baro2025, "METIER", q))
+      
+      # Interprétation de la relation entre les deux variables
+      
+      res <- test_dependance(baro2025, "METIER", q) 
+      
+      cat(res$interpretation)
+      
+      
+      cat(paste0("\n\n#### **",num_q,"-", num_var, "-2 ", "Vue par métier selon le ministère", "**","\n\n"))
+      
+      for (k in seq_along(liste_ministeres)){
+        
+        ministere <- liste_ministeres[k]
+        
+        baro2025_filtre_metier <- baro2025 %>% 
+          filter(MINISTERE == ministere)
+
+        cat(paste0("\n\n##### **",num_q,"-", num_var, "-2-", k , " ", ministere, "**","\n\n"))
+          
+        print(plotC_qcu(baro2025_filtre_metier, "METIER", q))
+        
+        # Interprétation de la relation entre les deux variables
+      
+        res <- test_dependance(baro2025_filtre_metier, "METIER", q)
+        
+        cat(res$interpretation)
+        
+      }
+      
+    }
+    
+  }
+
+}
+  
+```
+
+
+
+
+

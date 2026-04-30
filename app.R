@@ -12,25 +12,15 @@ library(writexl)
 
 ############ Import et préparation des données (une seule fois au démarrage)################ 
 # Import des scripts
-source("baro_import_rec_var.R")
-source("baro25_recodage_modalité.R")
-
-# Pré-traitement unique : conversion character ---- factor
-baro <- baro %>%
-  mutate(across(where(is.character), as.factor))
-
-# Cache des niveaux (évite de recalculer à chaque clic)
-levels_cache <- setNames(
-  lapply(names(baro), function(v) levels(baro[[v]])),
-  names(baro)
-) # Pour créer une liste nommée de toutes les modalités des colonnes facteurs du baro
+source("baro2025_import_rename_var.R")
+source("baro2025_recodage_modalité.R")
+source("baro2025_création_fonctions_objets_utiles.R")
 
 
 # Filtrage des questions (QT + QA)
-baro_question <- baro[, 
-                      which(names(baro) == "QT1_TRAVAIL_NSPP") :
-                        which(names(baro) == "QA11_INFO_COM_SYND")
-]
+baro_question <- fonction_cols_questions(baro)[ # fonction créée qui renvoie la liste des noms des colonnes relatives aux questions
+  !grepl("NSPP", fonction_cols_questions(baro)) # Exclure ici les questions relatives aux NSPP
+] 
 
 # Questions d’actualité
 baro_qa <- names(baro)[
@@ -56,32 +46,15 @@ vars_moda150 <- names(baro)[sapply(baro, function(x) {
   length(unique(na.omit(x))) <= 150
 })]
 
+# Pré-traitement unique : conversion character ---- factor
+baro <- baro %>%
+  mutate(across(where(is.character), as.factor))
 
-################################ Couleurs UNSA-Éducation #################################
-
-UNSA_BLEU   <- "#003189"
-UNSA_ROUGE  <- "#E30613"
-UNSA_CLAIR  <- "#e8edf8"
-
-palette_unsa <- c(
-  "#003189", "#1D5DB8", "#5B8DD9", "#93B8EE",
-  "#E30613", "#F05C65", "#003189", "#7a88aa"
-)
-
-################################### Thème ggplot maison ####################################
-
-theme_unsa <- function() {
-  theme_minimal(base_size = 13) +
-    theme(
-      plot.title       = element_text(colour = UNSA_BLEU, face = "bold", size = 14),
-      axis.text        = element_text(colour = "#444"),
-      panel.grid.major = element_line(colour = "#eef0f6"),
-      panel.grid.minor = element_blank(),
-      legend.position  = "bottom",
-      legend.title     = element_text(face = "bold", size = 10),
-      plot.margin      = margin(12, 12, 12, 12)
-    )
-}
+# Cache des niveaux (évite de recalculer à chaque clic)
+levels_cache <- setNames(
+  lapply(names(baro), function(v) levels(baro[[v]])),
+  names(baro)
+) # Pour créer une liste nommée de toutes les modalités des colonnes facteurs du baro
 
 
 ############################## CSS personnalisé UNSA ################################
@@ -598,7 +571,7 @@ server <- function(input, output, session) {
       if (input$croiser == "Non") {
         
         tab1 <- df %>%
-          count(.data[[input$q1]]) %>%
+          count(.data[[input$q1]]) %>%  
           mutate(Pourcentage = round(n * 100 / sum(n), 1)) %>%
           rename(Effectif = n)
         
